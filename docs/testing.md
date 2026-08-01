@@ -9,7 +9,7 @@ python -m pytest -q
 Final local result:
 
 ```text
-24 passed
+25 passed
 ```
 
 ## Verification scope
@@ -36,7 +36,7 @@ output remain outside I1.
 | Invalid input | Non-object JSON and invalid messages return 400 |
 | Upstream failure | Connection failure returns a controlled 502 |
 | I1 scope | Batch route is absent and streaming returns a controlled 400 |
-| Dashboard | One primary user is named and I2 controls are absent |
+| Dashboard | One primary user is named, I2 controls are absent, and results use structured safe views instead of raw JSON |
 
 ## Manual demo checks
 

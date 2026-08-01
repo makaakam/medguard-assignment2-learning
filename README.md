@@ -8,7 +8,7 @@ The primary user is a **Clinical AI Security Analyst**. The Dashboard helps this
 
 The MVP contains:
 
-- a working web Dashboard;
+- a responsive analyst Dashboard with readable decision, AI-output, security-signal and protected-message cards;
 - prompt-injection detection for user and tool messages;
 - block and sanitize responses;
 - EHR/RAG content isolation;
@@ -70,7 +70,7 @@ python -m pytest -q
 Verified Iteration 1 result:
 
 ```text
-24 passed
+25 passed
 ```
 
 The bundled risk model was trained with the exact NumPy, scikit-learn and
@@ -80,7 +80,9 @@ does not depend on local compiler tools.
 ## Local ML risk scorer
 
 The optional scorer complements the rule detector and shows a risk score in
-the Dashboard and API evidence. It was trained on 900 constructed examples
+the Dashboard and API evidence. Dashboard results and audit events are rendered
+as safe structured text rather than raw JSON; protected system instructions and
+security markers are not exposed to the browser user. It was trained on 900 constructed examples
 derived from 300 Alpaca prompt pairs. The split is grouped by `source_id`, so
 the same original prompt pair cannot occur in both train and test sets.
 

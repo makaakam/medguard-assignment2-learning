@@ -23,13 +23,13 @@ Client -> MedGuard Proxy -> Upstream LLM API
 | Canary | `medguard_core/canary.py` | Adds a secret marker and checks non-streaming model output |
 | ML Risk Scorer | `medguard_core/risk_model.py` | Adds a local probability score to rule-based evidence |
 | Audit | `medguard_core/audit.py` | Stores event metadata without API keys or full messages |
-| Dashboard | `medguard_core/dashboard.py` | Runs the classroom demonstration |
+| Dashboard | `medguard_core/dashboard.py` | Presents structured analyst decisions, AI output, signals and protected message flow |
 
 Separating these components lets team members test and explain one module without reading the whole proxy at once.
 
 ## AI output and simulated data
 
-The offline Dashboard uses simulated EHR/RAG text. For an accepted request it produces a clearly labelled simulated clinical-assistant output. This makes the security workflow demonstrable without network access or a shared API key.
+The offline Dashboard uses simulated EHR/RAG text. For an accepted request it produces a clearly labelled simulated clinical-assistant output. This makes the security workflow demonstrable without network access or a shared API key. Results and audit events are shown as readable cards instead of raw JSON. API-derived text is inserted with safe DOM text operations, while hidden system instructions, Canary values and isolation markers are replaced with an analyst-facing summary.
 
 The actual proxy path forwards clean, non-streaming `/v1/chat/completions` requests to an OpenAI-compatible provider. Automated tests use a mock LLM server to prove that clean traffic reaches the upstream service and blocked traffic does not.
 

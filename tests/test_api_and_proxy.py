@@ -85,6 +85,28 @@ async def test_iteration1_dashboard_names_one_primary_user_and_hides_i2_controls
     assert "analysisMode" not in html
 
 
+async def test_iteration1_dashboard_uses_structured_safe_result_views(aiohttp_client):
+    client = await aiohttp_client(create_app(MedGuardConfig(audit_enabled=False)))
+
+    resp = await client.get("/dashboard")
+    html = await resp.text()
+
+    assert resp.status == 200
+    assert 'id="analysisResult"' in html
+    assert 'aria-live="polite"' in html
+    assert 'id="aiResponseText"' in html
+    assert 'id="securitySignalList"' in html
+    assert 'id="messageFlow"' in html
+    assert 'id="recommendedAction"' in html
+    assert "function renderAnalysisResult(data)" in html
+    assert "function displayMessageContent(message)" in html
+    assert "MedGuard security policy applied" in html
+    assert "<pre" not in html
+    assert '<pre id="resultBox"' not in html
+    assert "resultBox.textContent" not in html
+    assert "JSON.stringify(value, null, 2)" not in html
+
+
 async def test_config_api_switches_to_sanitize_mode(aiohttp_client):
     client = await aiohttp_client(create_app(MedGuardConfig(audit_enabled=False)))
 

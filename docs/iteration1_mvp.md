@@ -16,6 +16,7 @@ As a Clinical AI Security Analyst, I want to inspect a clinical LLM request befo
 8. A clean non-streaming request can reach an OpenAI-compatible upstream provider.
 9. Invalid input and unavailable upstream services return controlled errors.
 10. Automated tests and manual demo steps are documented.
+11. The Dashboard presents results as readable structured evidence without exposing raw JSON, hidden system instructions or security markers.
 
 ## Iteration 2 backlog
 
