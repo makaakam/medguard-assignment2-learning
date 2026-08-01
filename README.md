@@ -1,58 +1,64 @@
-# MedGuard — Assignment 2 Iteration 1 Optimized
+# MedGuard — Assignment 2 Iteration 2 Final
 
-MedGuard is a local security proxy for clinical LLM workflows. This repository contains our first complete MVP for FIT5238 Assignment 2.
+MedGuard is a deployable local security proxy and web dashboard for clinical
+LLM workflows. The primary user is a **Clinical AI Security Analyst** who needs
+to test prompts, inspect defense evidence and compare security outcomes before
+requests reach an upstream model.
 
-The primary user is a **Clinical AI Security Analyst**. The Dashboard helps this user see whether a clinical prompt was blocked, sanitized, isolated as untrusted data, or allowed to continue.
+This branch is the final Iteration 2 build. It retains the complete optimized
+Iteration 1 baseline and adds the planned I2 functionality.
 
-## Iteration 1 scope
+## Implemented system
 
-The MVP contains:
-
-- a working web Dashboard;
-- prompt-injection detection for user and tool messages;
+- web dashboard for one defined analyst audience;
+- explainable prompt-injection rules for user, tool and retrieved content;
+- local TF-IDF and logistic-regression risk scoring;
 - block and sanitize responses;
 - EHR/RAG content isolation;
-- Canary-token checks for non-streaming model output;
-- a local TF-IDF and logistic-regression prompt-injection risk scorer;
-- an OpenAI-compatible `/v1/chat/completions` proxy;
-- simulated clinical data and simulated AI output for an offline classroom demo;
-- audit events and runtime defense switches;
-- automated tests for the main user paths and error paths.
+- Canary-token protection for non-streaming and streaming responses;
+- OpenAI-compatible `/v1/chat/completions` proxy;
+- defense-only, simulated-AI and live-upstream Dashboard modes;
+- batch security evaluation with detection, false-positive and latency metrics;
+- multimodal message validation and nested response/tool-call scanning;
+- audit-event search and JSON export;
+- controlled errors for malformed input, invalid upstream responses and
+  unavailable providers;
+- automated tests for I1, I2 and failure paths.
 
-Batch evaluation, Dashboard live-model mode, streaming output and advanced response validation are reserved for Iteration 2. Streaming requests receive a controlled `400` response in this build.
+## Iteration structure
 
-## System flow
+| Version | Branch | Tag |
+|---|---|---|
+| Original I1 baseline | `integration/iteration-1` | `iteration-1-complete` |
+| Optimized I1 final | `integration/iteration-1-optimized` | `iteration-1-optimized-complete` |
+| Final I2 | `integration/iteration-2` | `iteration-2-complete` |
 
-```text
-OpenAI-compatible client
-          |
-          v
-MedGuard proxy and three defense layers
-          |
-          v
-Upstream LLM API
-```
+The original I1 branch and tag are retained so the two demonstrated iterations
+remain reproducible.
 
-The Dashboard demonstration does not need an API key. The proxy endpoint can forward clean, non-streaming requests to a real OpenAI-compatible provider when a client supplies its provider key.
-
-## Project structure
+## Architecture
 
 ```text
-medguard-iteration1/
-  run.py
-  requirements.txt
-  README.md
-  medguard_core/
-  scripts/
-  models/
-  data/
-  tests/
-  docs/
+Dashboard or OpenAI-compatible client
+                |
+                v
+       validation and detection
+                |
+        isolation + ML score
+                |
+          Canary protection
+                |
+                v
+       OpenAI-compatible upstream
 ```
+
+The offline demonstration uses simulated clinical data and clearly labelled
+simulated output, so it works without an API key. Live mode uses an optional
+server-side credential and never sends that credential to the browser.
 
 ## Install
 
-Open PowerShell in this directory:
+Python 3.12 is supported. In PowerShell:
 
 ```powershell
 python -m venv .venv
@@ -67,94 +73,89 @@ python -m pip install -r requirements.txt
 python -m pytest -q
 ```
 
-Verified Iteration 1 result:
+Verified final result:
 
 ```text
-24 passed
+41 passed
 ```
 
-The bundled risk model was trained with the exact NumPy, scikit-learn and
-joblib versions pinned in `requirements.txt`, so a clean Python 3.12 install
-does not depend on local compiler tools.
+The suite covers the original I1 acceptance criteria, all I2 features and
+normal, blocked, invalid and upstream-failure paths. See
+[`docs/testing.md`](docs/testing.md) for the detailed evidence.
 
-## Local ML risk scorer
-
-The optional scorer complements the rule detector and shows a risk score in
-the Dashboard and API evidence. It was trained on 900 constructed examples
-derived from 300 Alpaca prompt pairs. The split is grouped by `source_id`, so
-the same original prompt pair cannot occur in both train and test sets.
-
-The recorded synthetic split has zero source overlap and scores 1.0 for
-accuracy, precision, recall and F1. These numbers only describe the constructed
-wrapper-classification task. They are not clinical-safety or real-world
-prompt-injection performance claims.
-
-To reproduce the model with a separately obtained `alpaca_data.json` file:
-
-```powershell
-python -B scripts\train_risk_model.py --alpaca "<path-to-alpaca_data.json>" --sample-pairs 300
-```
-
-The raw Alpaca file is training input only and is excluded by `.gitignore`.
-
-## Run the offline MVP demo
+## Run the offline demo
 
 ```powershell
 python -B run.py --port 8081
 ```
 
-Open:
+Open `http://127.0.0.1:8081/dashboard`.
 
-```text
-http://127.0.0.1:8081/dashboard
-```
+Suggested demonstration:
 
-For a supervised classroom demonstration on the same trusted network:
+1. Run a clean sample in Simulated AI mode and show the ML risk evidence.
+2. Run Role override and Poisoned EHR samples and explain block/isolation.
+3. Change Block to Sanitize and compare the processed message.
+4. Run batch evaluation and show detection rate, false-positive rate and latency.
+5. Filter the audit events and export the visible evidence as JSON.
+
+For a supervised classroom demo on the same trusted network:
 
 ```powershell
 python -B run.py --host 0.0.0.0 --port 8081
 ```
 
-Use the computer's LAN address from the assessor's device. Do not expose this Iteration 1 server directly to the public internet because the Dashboard does not include authentication or TLS.
+Do not expose this classroom prototype directly to the public internet because
+it does not include production authentication or TLS termination.
 
-Suggested demo:
+## Optional live upstream mode
 
-1. Run the clean sample and show the simulated assistant output.
-2. Run the Role override sample and show the blocked decision.
-3. Run the Poisoned EHR sample and explain detection and isolation.
-4. Change Block to Sanitize and repeat the attack.
-5. Open an audit event and show that full clinical messages and credentials are not logged.
-
-## Connect an OpenAI-compatible client
-
-Start MedGuard with the provider base URL:
+Set the credential only in the process environment; never commit it:
 
 ```powershell
+$env:MEDGUARD_UPSTREAM_API_KEY="<provider-api-key>"
+$env:MEDGUARD_UPSTREAM_MODEL="<provider-model>"
 python -B run.py --target "<provider-base-url>" --port 8081
 ```
 
-Configure the client:
+The proxy also accepts an authorization header from an OpenAI-compatible client.
+The Dashboard uses the server-side environment value when Live upstream AI is
+selected.
 
-```text
-Base URL: http://127.0.0.1:8081/v1
-API Key : provider API key
-Model   : provider model name
+## Local ML risk scorer
+
+The scorer complements the rule detector and returns a probability plus a
+pass/warn/block action. The bundled model was trained on 900 constructed
+examples derived from 300 Alpaca prompt pairs. Training and test groups are
+split by `source_id`, with zero source overlap.
+
+The recorded synthetic accuracy, precision, recall and F1 are 1.0. These values
+only measure the constructed wrapper-classification task; they are not clinical
+safety or real-world prompt-injection performance claims.
+
+To reproduce the model with a separately obtained raw dataset:
+
+```powershell
+python -B scripts\train_risk_model.py --alpaca "<path-to-alpaca_data.json>" --sample-pairs 300
 ```
 
-Do not commit API keys or `.env` files.
+The raw `alpaca_data.json` is not included and is ignored by Git.
 
-## Iteration 1 endpoints
+## API
 
-```text
-GET  /dashboard
-GET  /health
-GET  /api/status
-POST /api/config
-GET  /api/events
-POST /api/demo/analyze
-POST /v1/chat/completions
-GET  /v1/models
-```
+| Method and route | Purpose |
+|---|---|
+| `GET /dashboard` | Analyst web interface |
+| `GET /health` | Service and defense-layer health |
+| `GET /api/status` | Safe configuration and metrics |
+| `POST /api/config` | Change runtime defense switches |
+| `GET /api/events` | Read recent redacted audit metadata |
+| `POST /api/demo/analyze` | Analyze one offline or live scenario |
+| `POST /api/demo/batch` | Evaluate the bundled security samples |
+| `POST /v1/chat/completions` | Protected OpenAI-compatible request |
+| `GET /v1/models` | Provider passthrough |
 
-Technical documentation is in [`docs/project_report.md`](docs/project_report.md). Test evidence is in [`docs/testing.md`](docs/testing.md).
+System design, AI integration and robustness details are in
+[`docs/project_report.md`](docs/project_report.md). The retained I1 scope and
+acceptance criteria are in [`docs/iteration1_mvp.md`](docs/iteration1_mvp.md).
 

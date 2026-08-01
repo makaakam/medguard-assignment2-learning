@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 
 from aiohttp import web
 
@@ -38,6 +39,8 @@ def main() -> None:
         port=args.port,
         host=args.host,
         audit_log_path=args.audit_log,
+        upstream_api_key=os.getenv("MEDGUARD_UPSTREAM_API_KEY"),
+        upstream_model=os.getenv("MEDGUARD_UPSTREAM_MODEL"),
         injection_guard_enabled=not args.no_injection_guard,
         rag_isolation_enabled=not args.no_rag_isolation,
         canary_enabled=not args.no_canary,

@@ -1,81 +1,141 @@
-# Iteration 1 technical report
+# MedGuard final technical report
 
-## MVP and audience
+## Objective and audience
 
-Our Iteration 1 goal was a small system that could be installed locally, demonstrated without a paid API and connected to a real OpenAI-compatible model when credentials were available.
+MedGuard is a deployable prototype that integrates model-oriented security
+analysis with simulated and optional live data. Its primary user is a
+**Clinical AI Security Analyst**. The system supports that user in evaluating
+prompt-injection attempts, inspecting evidence and demonstrating protections;
+it is not a diagnostic or medical-advice system.
 
-We defined one primary audience: **Clinical AI Security Analyst**. This user needs to inspect prompt-injection decisions rather than receive medical advice. The Dashboard therefore prioritises defense status, processed messages and audit evidence.
+The design keeps an offline classroom path so assessors can reproduce the demo
+without a paid service, while also providing an OpenAI-compatible live path.
 
-## System architecture and design
+## System architecture
 
 ```text
-Client -> MedGuard Proxy -> Upstream LLM API
-                |
-                +-> Dashboard and audit events
+Browser Dashboard                     OpenAI-compatible client
+        |                                       |
+        +-------------------+-------------------+
+                            v
+                 aiohttp API and validation
+                            |
+          +-----------------+------------------+
+          |                 |                  |
+   Injection Guard     RAG Isolation      ML Risk Scorer
+          +-----------------+------------------+
+                            |
+                     Canary protection
+                            |
+                 simulated or live output
+                            |
+                  redacted audit evidence
 ```
 
-| Component | File | Iteration 1 responsibility |
+| Component | File | Responsibility |
 |---|---|---|
-| Entry point | `run.py` | Starts the local aiohttp server |
-| Proxy | `medguard_core/proxy.py` | Validates requests and coordinates the defense pipeline |
-| Injection Guard | `medguard_core/detectors.py` | Detects suspicious instructions in user and tool text |
-| RAG Isolation | `medguard_core/isolation.py` | Marks clinical context as untrusted data |
-| Canary | `medguard_core/canary.py` | Adds a secret marker and checks non-streaming model output |
-| ML Risk Scorer | `medguard_core/risk_model.py` | Adds a local probability score to rule-based evidence |
-| Audit | `medguard_core/audit.py` | Stores event metadata without API keys or full messages |
-| Dashboard | `medguard_core/dashboard.py` | Runs the classroom demonstration |
+| Entry point | `run.py` | Loads safe environment settings and starts aiohttp |
+| API/proxy | `medguard_core/proxy.py` | Validates input, coordinates defenses and forwards requests |
+| Rule detector | `medguard_core/detectors.py` | Produces explainable injection categories |
+| Isolation | `medguard_core/isolation.py` | Treats EHR/RAG/tool content as untrusted data |
+| Canary | `medguard_core/canary.py` | Detects prompt leakage in normal, nested and streamed output |
+| ML scorer | `medguard_core/risk_model.py` | Produces a local risk probability and action |
+| Audit | `medguard_core/audit.py` | Stores bounded event metadata without keys or full clinical text |
+| Dashboard | `medguard_core/dashboard.py` | Presents controls, metrics and evidence to the analyst |
 
-Separating these components lets team members test and explain one module without reading the whole proxy at once.
+The modules separate responsibilities so each defense can be tested and
+explained independently while the proxy remains the integration point.
 
-## AI output and simulated data
+## AI model and data integration
 
-The offline Dashboard uses simulated EHR/RAG text. For an accepted request it produces a clearly labelled simulated clinical-assistant output. This makes the security workflow demonstrable without network access or a shared API key.
+The offline Dashboard combines simulated EHR/RAG content with clearly labelled
+simulated assistant output. This satisfies a reproducible real-time interaction
+flow without claiming that fabricated output is medical advice.
 
-The actual proxy path forwards clean, non-streaming `/v1/chat/completions` requests to an OpenAI-compatible provider. Automated tests use a mock LLM server to prove that clean traffic reaches the upstream service and blocked traffic does not.
+The local ML component is a scikit-learn TF-IDF and logistic-regression
+pipeline. It was trained on 900 constructed examples derived from 300 Alpaca
+prompt pairs. Grouped splitting by `source_id` prevents the same original pair
+from appearing in both train and test sets. The stored metadata records zero
+group overlap and synthetic accuracy, precision, recall and F1 of 1.0.
 
-The simulated output is not presented as medical advice or as evidence of model accuracy. This build does not validate medical facts.
+Those metrics describe only the constructed wrapper patterns. They do not
+establish external, clinical or production prompt-injection performance. The
+explainable rules remain visible, and if the model cannot load the other
+defense layers continue operating with an `available = false` model status.
 
-The local ML scorer is a TF-IDF and logistic-regression pipeline trained on
-900 constructed examples derived from 300 Alpaca prompt pairs. Training and
-test data are split by `source_id`; the recorded overlap is zero. The resulting
-1.0 synthetic metrics show that the model learned the constructed wrapper
-patterns only. They are not reported as real-world or clinical-safety results.
+For live integration, accepted requests can be sent to an OpenAI-compatible
+provider. The Dashboard obtains the optional provider key from the server
+environment, while an API client may provide its own authorization header.
+Automated tests use a local mock provider so no secret or paid API is required.
 
-## Defense choices
+## UX and technical design choices
 
-1. Injection Guard offers an immediate, explainable decision for common role override, prompt leak and unsafe medication patterns.
-2. RAG Isolation separates instructions from retrieved EHR/tool text and treats the retrieved text as data.
-3. Canary checks whether a protected system marker appears in non-streaming model output.
-4. ML Risk Scoring complements the explainable rules with a local probability
-   and pass/warn/block action. If the model artifact is unavailable, the other
-   three defenses continue working and the API reports the scorer as unavailable.
+- One named audience avoids mixing security analysis with clinical diagnosis.
+- Clean, attack and poisoned-EHR samples provide a repeatable demonstration.
+- Block and sanitize modes expose the operational trade-off rather than hiding it.
+- Defense-only, simulated-AI and live-upstream modes make data provenance clear.
+- Rule category, ML score, processed messages and audit events give explainable evidence.
+- Batch metrics help the analyst compare attacks and benign samples.
+- Search and JSON export support review after the live demonstration.
+- The server binds to `127.0.0.1` by default and never returns its configured API key.
 
-We chose block and sanitize modes because an analyst may need either a strict demonstration or a comparison of the transformed request.
+## From Iteration 1 to Iteration 2
+
+The optimized I1 baseline delivered the Dashboard, rule detection, isolation,
+non-streaming Canary checks, local ML risk score, simulated output, protected
+non-streaming proxy and controlled input/provider errors.
+
+Iteration 2 adds:
+
+1. batch evaluation with detection, false-positive and latency metrics;
+2. live-upstream Dashboard mode using an optional server-side credential;
+3. streaming Canary protection, including split token fragments;
+4. multimodal message validation and nested/tool-call response scanning;
+5. stricter request, mode, batch and upstream-response validation;
+6. audit-event filtering/export and expanded status metrics;
+7. full regression and abnormal-path tests covering both iterations.
+
+The original I1 branch/tag and the optimized I1 branch/tag are retained, while
+the final I2 branch is built directly on the optimized I1 commit.
 
 ## API
 
-| Endpoint | Purpose |
+| Endpoint | Purpose and main behavior |
 |---|---|
-| `GET /dashboard` | Iteration 1 user interface |
-| `GET /health` | Server and defense-layer status |
-| `GET /api/status` | Runtime configuration and basic counters |
-| `POST /api/config` | Change defense switches and block/sanitize mode |
-| `GET /api/events` | Read recent audit metadata |
-| `POST /api/demo/analyze` | Run the offline MVP analysis |
-| `POST /v1/chat/completions` | Protected non-streaming model request |
-| `GET /v1/models` | Provider passthrough |
+| `GET /dashboard` | Analyst-facing web system |
+| `GET /health` | Reports service and enabled defense layers |
+| `GET /api/status` | Returns safe config and calculated counters |
+| `POST /api/config` | Updates allow-listed runtime switches |
+| `GET /api/events` | Returns recent redacted audit evidence |
+| `POST /api/demo/analyze` | Runs defense-only, simulated or live analysis |
+| `POST /api/demo/batch` | Evaluates the bounded sample set and metrics |
+| `POST /v1/chat/completions` | Protected OpenAI-compatible completion path |
+| `GET /v1/models` | Controlled provider passthrough |
 
-## Robustness boundary
+## Robustness and error handling
 
-Iteration 1 returns controlled errors for malformed JSON, invalid message arrays, unavailable upstream services and unsupported streaming requests. It binds to `127.0.0.1` by default.
+The API rejects non-object JSON, invalid message arrays, unsupported content
+shapes, wrong field types, unknown analysis modes and oversized batches with
+controlled client errors. Provider timeouts or connection failures return a
+controlled `502` response. Malformed upstream objects are rejected instead of
+being trusted. Streaming output is buffered until the Canary check completes,
+preventing a leaked fragment from being forwarded first.
 
-The following work is intentionally deferred:
+Upstream failures have their own audit category and are not counted as passed
+security decisions. Audit records redact credentials and avoid storing full
+clinical messages. These controls improve demonstration safety, but production
+deployment would still require authentication, TLS termination, authorization,
+persistent secured audit storage, rate limiting and an externally validated
+security dataset.
 
-- Batch Security Evaluation and calculated detection metrics;
-- Dashboard Live upstream AI mode;
-- streaming Canary protection;
-- multimodal input and nested output scanning;
-- event filtering/export;
-- broader attack datasets and advanced provider compatibility.
+## Deployment and demonstration
 
-These items form a visible Iteration 2 backlog rather than hidden functionality in the MVP.
+Install from `requirements.txt`, run `python -B run.py --port 8081`, and open
+`http://127.0.0.1:8081/dashboard`. The system is usable offline. Optional live
+mode is enabled through `MEDGUARD_UPSTREAM_API_KEY`,
+`MEDGUARD_UPSTREAM_MODEL` and the `--target` provider base URL.
+
+The recommended demonstration shows a clean request, a blocked role override,
+an isolated poisoned EHR sample, sanitize mode, batch metrics and filtered audit
+evidence. This sequence makes the UX, AI integration and technical defenses
+visible within one reproducible run.

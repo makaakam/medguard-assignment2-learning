@@ -9,19 +9,91 @@ from .config import MedGuardConfig
 logger = logging.getLogger("medguard_proxy")
 
 
+_TEXT_KEYS = frozenset(
+    {
+        "text",
+        "content",
+        "input_text",
+        "output_text",
+        "arguments",
+        "prompt",
+        "query",
+        "value",
+    }
+)
+_CONTAINER_KEYS = frozenset(
+    {"parts", "items", "blocks", "segments", "messages", "input"}
+)
+_MAX_CONTENT_DEPTH = 32
+
+
 def extract_text_content(content: Any) -> str:
+    """Collect text from nested chat/multimodal content safely.
+
+    OpenAI-compatible messages may use a string, an array of text/image
+    blocks, or provider-specific nested tool/function objects.  Only known
+    text-bearing keys are collected, so image URLs and metadata do not become
+    detector input.  A depth and cycle guard prevents malformed Python values
+    from hanging or overflowing the detector; JSON request bodies cannot have
+    cycles, but direct callers can.
+    """
+
+    seen: set[int] = set()
+
+    def walk(value: Any, *, text_context: bool, depth: int) -> list[str]:
+        if depth > _MAX_CONTENT_DEPTH:
+            return []
+        if isinstance(value, str):
+            return [value] if text_context else []
+        if value is None or isinstance(value, (bytes, bytearray, memoryview)):
+            return []
+
+        if isinstance(value, (list, tuple)):
+            marker = id(value)
+            if marker in seen:
+                return []
+            seen.add(marker)
+            parts: list[str] = []
+            for item in value:
+                parts.extend(walk(item, text_context=text_context, depth=depth + 1))
+            return parts
+
+        if isinstance(value, dict):
+            marker = id(value)
+            if marker in seen:
+                return []
+            seen.add(marker)
+            parts: list[str] = []
+            for key, child in value.items():
+                if key in _TEXT_KEYS:
+                    parts.extend(walk(child, text_context=True, depth=depth + 1))
+                elif key in _CONTAINER_KEYS:
+                    parts.extend(walk(child, text_context=text_context, depth=depth + 1))
+                elif isinstance(child, (dict, list, tuple)):
+                    # Unknown wrappers can still contain a recognised text
+                    # field.  Recurse into containers, but skip metadata
+                    # leaves such as type/id/mime/source.
+                    parts.extend(walk(child, text_context=False, depth=depth + 1))
+            return parts
+
+        return []
+
+    return "\n".join(
+        part
+        for part in walk(content, text_context=isinstance(content, str), depth=0)
+        if part
+    )
+
+
+def append_text_content(content: Any, suffix: str) -> Any:
+    """Append an instruction without breaking multimodal message content."""
     if isinstance(content, str):
-        return content
-    if isinstance(content, list):
-        parts = []
-        for item in content:
-            if isinstance(item, dict):
-                if item.get("type") in ("text", "input_text") and isinstance(item.get("text"), str):
-                    parts.append(item["text"])
-                elif isinstance(item.get("content"), str):
-                    parts.append(item["content"])
-        return "\n".join(parts)
-    return ""
+        return content + suffix
+    if isinstance(content, (list, tuple)):
+        return [*content, {"type": "text", "text": suffix}]
+    if content is None:
+        return suffix
+    return f"{content}{suffix}"
 
 
 class InjectionPatternDetector:

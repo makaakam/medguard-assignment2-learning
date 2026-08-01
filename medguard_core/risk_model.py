@@ -33,8 +33,6 @@ def messages_to_text(messages: list[dict[str, Any]]) -> str:
 
 
 class RiskScorer:
-    """Optional local classifier that complements the I1 rule detector."""
-
     def __init__(self, config: MedGuardConfig):
         self.config = config
         self._model: Any | None = None
@@ -65,12 +63,7 @@ class RiskScorer:
             return {"available": False, "reason": self._load_error or "unavailable"}
 
         if not text.strip():
-            return {
-                "available": True,
-                "risk_score": 0.0,
-                "label": "low_risk",
-                "action": "pass",
-            }
+            return {"available": True, "risk_score": 0.0, "label": "low_risk", "action": "pass"}
 
         probability = float(model.predict_proba([text])[0][1])
         score = round(probability, 4)
@@ -83,12 +76,7 @@ class RiskScorer:
         else:
             action = "pass"
             label = "low_risk"
-        return {
-            "available": True,
-            "risk_score": score,
-            "label": label,
-            "action": action,
-        }
+        return {"available": True, "risk_score": score, "label": label, "action": action}
 
     def score_messages(self, messages: list[dict[str, Any]]) -> dict[str, Any]:
         return self.score_text(messages_to_text(messages))

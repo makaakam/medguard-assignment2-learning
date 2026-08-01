@@ -28,6 +28,10 @@ class MedGuardConfig:
     audit_log_path: str = "./logs/audit.jsonl"
 
     upstream_timeout_seconds: float = 30.0
+    # Optional server-side credential for Dashboard live-analysis mode. It is
+    # deliberately excluded from config_payload so it never reaches the UI.
+    upstream_api_key: str | None = None
+    upstream_model: str | None = None
 
 
 def config_payload(config: MedGuardConfig) -> dict:
@@ -44,6 +48,7 @@ def config_payload(config: MedGuardConfig) -> dict:
         "rag_min_length": config.rag_min_length,
         "risk_block_threshold": config.risk_block_threshold,
         "risk_warn_threshold": config.risk_warn_threshold,
+        "upstream_model": config.upstream_model,
     }
 
 
