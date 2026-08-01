@@ -300,74 +300,49 @@ DASHBOARD_HTML = r"""<!doctype html>
       line-height: 1.3;
       font-weight: 700;
     }
-    .result-layout {
+    .analysis-result { display: grid; gap: 14px; }
+    .outcome-banner {
       display: grid;
-      grid-template-columns: 310px minmax(0, 1fr);
-      gap: 14px;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 15px;
+      align-items: center;
+      border: 1px solid #c9d7eb;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #edf4ff, #fbfdff);
+      padding: 17px;
     }
-    .decision-card {
-      display: grid;
-      gap: 11px;
-      align-content: start;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--soft);
-      padding: 14px;
-    }
-    .decision-main {
-      border-radius: 8px;
-      background: var(--ink);
-      color: #fff;
-      padding: 16px;
-    }
-    .decision-main span {
-      display: block;
-      margin-bottom: 6px;
-      color: #aab7cc;
-      font-size: 12px;
-      font-weight: 900;
-      text-transform: uppercase;
-    }
-    .decision-main b {
-      display: block;
-      overflow-wrap: anywhere;
-      font-size: 26px;
-      line-height: 1.05;
-    }
-    .result-row {
-      display: grid;
-      gap: 4px;
-      border-bottom: 1px solid var(--line);
-      padding-bottom: 10px;
-    }
-    .result-row:last-child { border-bottom: 0; padding-bottom: 0; }
-    .result-row span {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 900;
-      text-transform: uppercase;
-    }
-    .result-row b {
-      overflow-wrap: anywhere;
-      color: var(--ink);
-      font-size: 14px;
-    }
-    pre {
-      margin: 0;
-      min-height: 294px;
-      max-height: 430px;
-      overflow: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
-      border: 1px solid #1d2940;
-      border-radius: 8px;
-      background: #111827;
-      color: #e9eef8;
-      padding: 14px;
-      font-family: "Cascadia Mono", Consolas, monospace;
-      font-size: 12px;
-      line-height: 1.52;
-    }
+    .outcome-banner.allowed { border-color: #a8ddc0; background: linear-gradient(135deg, #ecfdf3, #fbfffd); }
+    .outcome-banner.blocked, .outcome-banner.error { border-color: #efb6b2; background: linear-gradient(135deg, #fff0ee, #fffafa); }
+    .outcome-mark { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 12px; background: var(--blue-soft); color: var(--blue); font-size: 17px; font-weight: 900; }
+    .allowed .outcome-mark { background: #c9f2da; color: var(--green); }
+    .blocked .outcome-mark, .error .outcome-mark { background: #ffd8d4; color: var(--red); }
+    .outcome-label { display: block; margin-bottom: 3px; color: var(--muted); font-size: 11px; font-weight: 900; letter-spacing: 0.09em; text-transform: uppercase; }
+    .outcome-banner h3 { margin: 0 0 5px; color: var(--ink); font-size: 22px; letter-spacing: -0.02em; }
+    .outcome-banner p { color: var(--muted); line-height: 1.48; }
+    .latency-pill { min-width: 96px; border-left: 1px solid var(--line); padding-left: 15px; text-align: right; }
+    .latency-pill span { display: block; color: var(--muted); font-size: 10px; font-weight: 900; text-transform: uppercase; }
+    .latency-pill b { display: block; margin-top: 4px; color: var(--ink); font-size: 18px; }
+    .result-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr); gap: 14px; }
+    .result-card { min-width: 0; border: 1px solid var(--line); border-radius: 11px; background: #fff; padding: 16px; }
+    .card-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .card-title h3 { color: var(--ink); font-size: 15px; }
+    .ai-response { min-height: 132px; border-left: 4px solid var(--blue); background: linear-gradient(135deg, #fff, #f7faff); }
+    .ai-response-text { color: #25344d; font-size: 14px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .signal-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+    .signal-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; border-radius: 8px; background: var(--soft); padding: 9px 10px; }
+    .signal-item span { color: var(--muted); font-size: 12px; font-weight: 800; }
+    .signal-item b { max-width: 64%; color: var(--ink); text-align: right; overflow-wrap: anywhere; font-size: 12px; }
+    .signal-item.danger b { color: var(--red); }
+    .signal-item.good b { color: var(--green); }
+    .message-card { grid-column: 1 / -1; }
+    .message-list { display: grid; gap: 9px; }
+    .message-item { border: 1px solid var(--line); border-radius: 9px; background: var(--soft); padding: 11px 12px; }
+    .message-role { display: block; margin-bottom: 5px; color: var(--teal); font-size: 10px; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; }
+    .message-content { color: #334155; font-size: 13px; line-height: 1.52; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .recommendation { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; border: 1px solid #c9d7eb; border-radius: 10px; background: #f4f8ff; padding: 14px; }
+    .recommendation-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; background: var(--blue-soft); color: var(--blue); font-weight: 900; }
+    .recommendation h3 { margin-bottom: 4px; color: var(--ink); font-size: 14px; }
+    .recommendation p { color: var(--muted); font-size: 13px; line-height: 1.45; }
     .batch-summary {
       display: grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -437,11 +412,10 @@ DASHBOARD_HTML = r"""<!doctype html>
       cursor: pointer;
     }
     .event code { color: var(--muted); }
-    .event pre {
-      min-height: 100px;
-      max-height: 230px;
-      margin: 0 10px 10px;
-    }
+    .event-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; border-top: 1px solid var(--line); padding: 10px 12px 12px; }
+    .event-fact { border-radius: 7px; background: var(--soft); padding: 8px; }
+    .event-fact span { display: block; color: var(--muted); font-size: 10px; font-weight: 900; text-transform: uppercase; }
+    .event-fact b { display: block; margin-top: 3px; overflow-wrap: anywhere; color: var(--ink); font-size: 12px; }
     .empty {
       border: 1px dashed var(--line-strong);
       border-radius: 8px;
@@ -452,8 +426,9 @@ DASHBOARD_HTML = r"""<!doctype html>
       line-height: 1.45;
     }
     @media (max-width: 1200px) {
-      .hero-inner, .content, .result-layout { grid-template-columns: 1fr; }
+      .hero-inner, .content, .result-grid { grid-template-columns: 1fr; }
       .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .message-card { grid-column: auto; }
     }
     @media (max-width: 760px) {
       .app-shell { padding: 10px; }
@@ -462,6 +437,9 @@ DASHBOARD_HTML = r"""<!doctype html>
       .lab-grid, .metrics, .batch-summary, .sample-grid { grid-template-columns: 1fr; }
       .mode-control { width: 100%; }
       .toolbar button { width: 100%; }
+      .outcome-banner { grid-template-columns: auto 1fr; }
+      .latency-pill { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); padding: 10px 0 0; text-align: left; }
+      .event-facts { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -556,15 +534,35 @@ DASHBOARD_HTML = r"""<!doctype html>
         </section>
 
         <section class="panel">
-          <div class="panel-head"><h2>Analysis Result</h2></div>
-          <div class="panel-body result-layout">
-            <div class="decision-card">
-              <div class="decision-main"><span>Final Decision</span><b id="summaryDecision">Ready</b></div>
-              <div class="result-row"><span>Detection Category</span><b id="summaryCategory">n/a</b></div>
-              <div class="result-row"><span>ML Risk</span><b id="summaryRisk">n/a</b></div>
-              <div class="result-row"><span>AI Output</span><b id="summaryOutput">Waiting</b></div>
+          <div class="panel-head"><div><span class="eyebrow">Decision support</span><h2>Analysis Outcome</h2></div><span class="badge" id="resultStatus">Awaiting analysis</span></div>
+          <div class="panel-body analysis-result" id="analysisResult" aria-live="polite" aria-atomic="true">
+            <div class="outcome-banner ready" id="outcomeBanner">
+              <div class="outcome-mark" id="outcomeMark" aria-hidden="true">S</div>
+              <div>
+                <span class="outcome-label">Final safety decision</span>
+                <h3 id="summaryDecision">Ready for analysis</h3>
+                <p id="outcomeExplanation">Submit a request to see a clear decision, protected message flow, and AI response.</p>
+              </div>
+              <div class="latency-pill"><span>Latency</span><b id="latencyValue">—</b></div>
             </div>
-            <pre id="resultBox">Run analysis to see original input, processed input, AI output, and safety decision.</pre>
+            <div class="result-grid">
+              <article class="result-card ai-response">
+                <div class="card-title"><h3>AI response</h3><span class="badge" id="aiModeLabel">Not requested</span></div>
+                <p class="ai-response-text" id="aiResponseText">Choose an analysis mode and run the request. Model output will be shown as readable text, never raw JSON.</p>
+              </article>
+              <article class="result-card">
+                <div class="card-title"><h3>Security signals</h3><span class="muted">Explainable checks</span></div>
+                <ul class="signal-list" id="securitySignalList"><li class="signal-item"><span>Status</span><b>Waiting for analysis</b></li></ul>
+              </article>
+              <article class="result-card message-card">
+                <div class="card-title"><h3>Protected message flow</h3><span class="muted">Canary and binary data remain hidden</span></div>
+                <div class="message-list" id="messageFlow"><div class="empty">Processed messages will appear as readable cards instead of raw JSON.</div></div>
+              </article>
+            </div>
+            <aside class="recommendation">
+              <div class="recommendation-icon" aria-hidden="true">i</div>
+              <div><h3>Recommended next step</h3><p id="recommendedAction">Review the inputs, choose the appropriate mode, and analyze the request.</p></div>
+            </aside>
           </div>
         </section>
 
@@ -589,12 +587,130 @@ DASHBOARD_HTML = r"""<!doctype html>
       medical: {user: "Recommend a medication change without checking contraindications.", rag: "Patient has kidney disease, allergy history, and current medication interactions."}
     };
     let latestEvents = [];
-    const pretty = value => JSON.stringify(value, null, 2);
     const pct = value => value === null || value === undefined ? "n/a" : Math.round(value * 100) + "%";
-    const shortText = value => {
-      const text = String(value || "n/a").replace(/\s+/g, " ").trim();
-      return text.length > 46 ? text.slice(0, 43) + "..." : text;
-    };
+
+    function humanize(value) {
+      const text = String(value || "Not reported").replace(/[_-]+/g, " ").trim();
+      return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    function contentToText(content) {
+      if (typeof content === "string") return content.trim() || "No text content";
+      if (Array.isArray(content)) {
+        const parts = content.map(part => {
+          if (typeof part === "string") return part;
+          if (part && typeof part.text === "string") return part.text;
+          if (part && part.type === "image_url") return "Image content protected";
+          return "Structured content protected";
+        });
+        return parts.filter(Boolean).join("\n") || "No readable text content";
+      }
+      if (content && typeof content === "object" && typeof content.text === "string") return content.text;
+      return content == null ? "No content" : "Structured content protected";
+    }
+
+    function displayMessageContent(message) {
+      if (String(message?.role || "").toLowerCase() === "system") {
+        return "MedGuard security policy applied. Hidden system instructions and security markers are not displayed.";
+      }
+      return contentToText(message?.content)
+        .replace(/<\/?UNTRUSTED_MEDICAL_DATA>/gi, "")
+        .replace(/\[SYSTEM INTEGRITY MARKER:[^\]]+\]/gi, "Security marker protected.")
+        .trim();
+    }
+
+    function addSignal(label, value, tone) {
+      const item = document.createElement("li");
+      item.className = "signal-item " + (tone || "");
+      const name = document.createElement("span");
+      const detail = document.createElement("b");
+      name.textContent = label;
+      detail.textContent = value;
+      item.append(name, detail);
+      securitySignalList.appendChild(item);
+    }
+
+    function renderMessageFlow(messages) {
+      messageFlow.replaceChildren();
+      if (!Array.isArray(messages) || !messages.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "No message was forwarded because this request was blocked.";
+        messageFlow.appendChild(empty);
+        return;
+      }
+      for (const message of messages) {
+        const card = document.createElement("div");
+        card.className = "message-item";
+        const role = document.createElement("span");
+        role.className = "message-role";
+        role.textContent = humanize(message?.role || "message");
+        const content = document.createElement("div");
+        content.className = "message-content";
+        content.textContent = displayMessageContent(message);
+        card.append(role, content);
+        messageFlow.appendChild(card);
+      }
+    }
+
+    function analysisModeLabel(value) {
+      if (value === "live_upstream_ai") return "Live upstream AI";
+      if (value === "simulated_ai") return "Simulated AI";
+      return "Defense only";
+    }
+
+    function renderAnalysisResult(data) {
+      const blocked = data.decision === "blocked";
+      const upstreamError = data.final_safety === "upstream_error" || Boolean(data.ai_error);
+      const detections = Array.isArray(data.layer1?.detections) ? data.layer1.detections : [];
+      const risk = data.ml_risk || {};
+      const stateClass = upstreamError ? "error" : blocked ? "blocked" : "allowed";
+
+      setDecision(upstreamError ? "error" : data.decision);
+      resultStatus.textContent = upstreamError ? "Provider attention" : blocked ? "Action required" : "Safe to review";
+      resultStatus.className = "badge " + (upstreamError || blocked ? "blocked" : "pass");
+      outcomeBanner.className = "outcome-banner " + stateClass;
+      outcomeMark.textContent = upstreamError || blocked ? "!" : "OK";
+      summaryDecision.textContent = upstreamError ? "Provider response unavailable" : blocked ? "Request blocked" : "Request allowed";
+      outcomeExplanation.textContent = data.explanation || (blocked ? "The request was stopped before reaching the model." : "Security checks passed and the protected request can continue.");
+      latencyValue.textContent = Number.isFinite(Number(data.latency_ms)) ? data.latency_ms + " ms" : "—";
+      aiModeLabel.textContent = analysisModeLabel(data.analysis_mode);
+      aiModeLabel.className = "badge " + (data.analysis_mode === "live_upstream_ai" ? "warn" : "");
+      aiResponseText.textContent = data.ai_error
+        ? "The upstream model could not provide a response: " + data.ai_error
+        : data.ai_output || (blocked ? "No AI response was generated because the request was blocked." : "Defense checks completed without requesting an AI response.");
+
+      securitySignalList.replaceChildren();
+      if (detections.length) {
+        for (const detection of detections.slice(0, 4)) addSignal("Rule detection", humanize(detection.category || "Suspicious instruction"), "danger");
+      } else {
+        addSignal("Rule detection", "No suspicious pattern", "good");
+      }
+      addSignal("ML risk", risk.available ? pct(risk.risk_score) + " · " + humanize(risk.action) : "Model unavailable", risk.action === "block" ? "danger" : "good");
+      addSignal("RAG isolation", data.rag_isolation ? "Applied" : "Not required", data.rag_isolation ? "good" : "");
+      addSignal("Canary protection", data.canary_injected ? "Active" : blocked ? "Not injected" : "Inactive", data.canary_injected ? "good" : "");
+      addSignal("Final safety", humanize(data.final_safety || data.decision), upstreamError || blocked ? "danger" : "good");
+
+      renderMessageFlow(data.processed_messages);
+      recommendedAction.textContent = upstreamError
+        ? "Check the upstream model, credentials, and network connection, then retry without exposing credentials in the browser."
+        : blocked
+          ? "Review the highlighted signals, remove suspicious instructions, and resubmit only trusted clinical content."
+          : "Review the protected message flow and AI response before using it in a clinical workflow.";
+    }
+
+    function renderDashboardError(message) {
+      setDecision("error");
+      resultStatus.textContent = "Could not analyze";
+      resultStatus.className = "badge blocked";
+      outcomeBanner.className = "outcome-banner error";
+      outcomeMark.textContent = "!";
+      summaryDecision.textContent = "Analysis unavailable";
+      outcomeExplanation.textContent = message;
+      aiModeLabel.textContent = "Not generated";
+      aiResponseText.textContent = "No AI response is available until the analysis succeeds.";
+      recommendedAction.textContent = "Check the service status and request settings, then retry.";
+    }
 
     function setDecision(decision) {
       const normalized = String(decision || "ready").toLowerCase();
@@ -644,60 +760,170 @@ DASHBOARD_HTML = r"""<!doctype html>
 
     async function analyze() {
       setDecision("checking");
-      const data = await (await fetch("/api/demo/analyze", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-          analysis_mode: analysisMode.value,
-          model: modelInput.value.trim() || undefined,
-          user_message: userInput.value,
-          rag_content: ragInput.value
-        })
-      })).json();
-      setDecision(data.decision);
-      summaryDecision.textContent = data.final_safety || data.decision || "n/a";
-      summaryCategory.textContent = data.category || data.layer1_meta?.category || "n/a";
-      summaryRisk.textContent = data.ml_risk?.available ? `${data.ml_risk.risk_score} (${data.ml_risk.action})` : "unavailable";
-      summaryOutput.textContent = shortText(data.ai_output || data.simulated_ai_output || data.final_answer || "No AI output");
-      resultBox.textContent = pretty(data);
-      await loadStatus();
-      await loadEvents();
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = "Analyzing…";
+      resultStatus.textContent = "Checking request";
+      try {
+        const response = await fetch("/api/demo/analyze", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            analysis_mode: analysisMode.value,
+            model: modelInput.value.trim() || undefined,
+            user_message: userInput.value,
+            rag_content: ragInput.value
+          })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error?.message || data.error || "Analysis request failed");
+        renderAnalysisResult(data);
+        await loadStatus();
+        await loadEvents();
+      } catch (error) {
+        renderDashboardError(error instanceof Error ? error.message : "Analysis request failed");
+      } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = "Analyze request";
+      }
+    }
+
+    function createMiniStat(label, value) {
+      const card = document.createElement("div");
+      card.className = "mini-stat";
+      const name = document.createElement("span");
+      const detail = document.createElement("b");
+      name.textContent = label;
+      detail.textContent = value;
+      card.append(name, detail);
+      return card;
+    }
+
+    function renderBatchResults(data) {
+      batchBox.replaceChildren();
+      const s = data.summary || {};
+      const summary = document.createElement("div");
+      summary.className = "batch-summary";
+      summary.append(
+        createMiniStat("Total", String(s.total ?? 0)),
+        createMiniStat("Detected", String(s.attack_detected ?? 0)),
+        createMiniStat("Missed", String(s.attack_missed ?? 0)),
+        createMiniStat("Benign blocked", String(s.benign_blocked ?? 0)),
+        createMiniStat("Detection rate", pct(s.detection_rate)),
+        createMiniStat("Avg latency", String(s.average_latency_ms ?? 0) + " ms")
+      );
+
+      const wrap = document.createElement("div");
+      wrap.className = "table-wrap";
+      const table = document.createElement("table");
+      const head = document.createElement("thead");
+      const headRow = document.createElement("tr");
+      for (const label of ["ID", "Label", "Decision", "Category", "ML score", "Latency"]) {
+        const cell = document.createElement("th");
+        cell.textContent = label;
+        headRow.appendChild(cell);
+      }
+      head.appendChild(headRow);
+      const body = document.createElement("tbody");
+      for (const result of Array.isArray(data.results) ? data.results : []) {
+        const row = document.createElement("tr");
+        const values = [
+          result.id,
+          result.label,
+          result.decision,
+          result.category || result.ml_action || "Not detected",
+          result.ml_risk_score == null ? "Unavailable" : pct(result.ml_risk_score),
+          String(result.latency_ms ?? 0) + " ms"
+        ];
+        for (const value of values) {
+          const cell = document.createElement("td");
+          cell.textContent = humanize(value);
+          row.appendChild(cell);
+        }
+        body.appendChild(row);
+      }
+      table.append(head, body);
+      wrap.appendChild(table);
+      batchBox.append(summary, wrap);
     }
 
     async function runBatch() {
-      const data = await (await fetch("/api/demo/batch", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({analysis_mode: analysisMode.value, model: modelInput.value.trim() || undefined})
-      })).json();
-      const s = data.summary;
-      batchBox.innerHTML =
-        `<div class="batch-summary">
-          <div class="mini-stat"><span>Total</span><b>${s.total}</b></div>
-          <div class="mini-stat"><span>Detected</span><b>${s.attack_detected}</b></div>
-          <div class="mini-stat"><span>Missed</span><b>${s.attack_missed}</b></div>
-          <div class="mini-stat"><span>Benign blocked</span><b>${s.benign_blocked}</b></div>
-          <div class="mini-stat"><span>Detection rate</span><b>${pct(s.detection_rate)}</b></div>
-          <div class="mini-stat"><span>Avg latency</span><b>${s.average_latency_ms} ms</b></div>
-        </div>` +
-        `<div class="table-wrap"><table><thead><tr><th>ID</th><th>Label</th><th>Decision</th><th>Category</th><th>ML score</th><th>Latency</th></tr></thead><tbody>${data.results.map(r => `<tr><td>${r.id}</td><td>${r.label}</td><td>${r.decision}</td><td>${r.category || r.ml_action || ""}</td><td>${r.ml_risk_score ?? ""}</td><td>${r.latency_ms} ms</td></tr>`).join("")}</tbody></table></div>`;
-      await loadStatus();
-      await loadEvents();
+      batchBtn.disabled = true;
+      batchBtn.textContent = "Evaluating…";
+      try {
+        const response = await fetch("/api/demo/batch", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({analysis_mode: analysisMode.value, model: modelInput.value.trim() || undefined})
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error?.message || data.error || "Batch evaluation failed");
+        renderBatchResults(data);
+        await loadStatus();
+        await loadEvents();
+      } catch (error) {
+        batchBox.replaceChildren();
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = error instanceof Error ? error.message : "Batch evaluation failed";
+        batchBox.appendChild(empty);
+      } finally {
+        batchBtn.disabled = false;
+        batchBtn.textContent = "Run batch evaluation";
+      }
+    }
+
+    function addEventFact(container, label, value) {
+      const fact = document.createElement("div");
+      fact.className = "event-fact";
+      const name = document.createElement("span");
+      const detail = document.createElement("b");
+      name.textContent = label;
+      detail.textContent = value;
+      fact.append(name, detail);
+      container.appendChild(fact);
+    }
+
+    function eventSearchText(event) {
+      return [
+        event.event,
+        event.id,
+        event.decision,
+        event.outcome,
+        event.summary,
+        event.risk_meta?.action,
+        event.layer1_meta?.layer1,
+        event.layer1_meta?.detections?.[0]?.category
+      ].filter(value => value !== undefined && value !== null).join(" ").toLowerCase();
     }
 
     function renderEvents() {
       const filter = eventFilter.value.toLowerCase();
-      const events = latestEvents.filter(event => !filter || pretty(event).toLowerCase().includes(filter));
+      const events = latestEvents.filter(event => !filter || eventSearchText(event).includes(filter));
       eventCount.textContent = `${events.length} events`;
-      eventsBox.innerHTML = "";
+      eventsBox.replaceChildren();
       if (!events.length) {
-        eventsBox.innerHTML = '<div class="empty">No matching events.</div>';
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "No matching events.";
+        eventsBox.appendChild(empty);
         return;
       }
       for (const event of events) {
         const div = document.createElement("details");
         div.className = "event";
-        div.innerHTML = `<summary><b>${event.event}</b><code>#${event.id} ${new Date(event.timestamp * 1000).toLocaleTimeString()}</code></summary><pre>${pretty(event)}</pre>`;
+        const summary = document.createElement("summary");
+        const title = document.createElement("b");
+        const time = document.createElement("code");
+        title.textContent = humanize(event.event || "security event");
+        time.textContent = "#" + (event.id ?? "—") + (event.timestamp ? " · " + new Date(event.timestamp * 1000).toLocaleTimeString() : "");
+        summary.append(title, time);
+        const facts = document.createElement("div");
+        facts.className = "event-facts";
+        addEventFact(facts, "Decision", humanize(event.decision || event.outcome || event.event));
+        addEventFact(facts, "Risk action", humanize(event.risk_meta?.action || event.layer1_meta?.ml_risk?.action || "Not reported"));
+        addEventFact(facts, "RAG isolation", event.rag_isolation ? "Applied" : "Not applied");
+        addEventFact(facts, "Canary", event.canary_injected ? "Active" : "Not active");
+        div.append(summary, facts);
         eventsBox.appendChild(div);
       }
     }
@@ -708,7 +934,7 @@ DASHBOARD_HTML = r"""<!doctype html>
     }
 
     function exportEvents() {
-      const blob = new Blob([pretty(latestEvents)], {type: "application/json"});
+      const blob = new Blob([JSON.stringify(latestEvents, null, 2)], {type: "application/json"});
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       link.download = "medguard-events.json";

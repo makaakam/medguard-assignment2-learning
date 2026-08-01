@@ -10,7 +10,7 @@ Iteration 1 baseline and adds the planned I2 functionality.
 
 ## Implemented system
 
-- web dashboard for one defined analyst audience;
+- responsive web dashboard with structured decision, AI-output, security-signal and protected-message views for one defined analyst audience;
 - explainable prompt-injection rules for user, tool and retrieved content;
 - local TF-IDF and logistic-regression risk scoring;
 - block and sanitize responses;
@@ -76,7 +76,7 @@ python -m pytest -q
 Verified final result:
 
 ```text
-41 passed
+42 passed
 ```
 
 The suite covers the original I1 acceptance criteria, all I2 features and
@@ -90,6 +90,11 @@ python -B run.py --port 8081
 ```
 
 Open `http://127.0.0.1:8081/dashboard`.
+
+The user interface renders model/API results as readable cards and tables rather
+than raw JSON. It hides protected system instructions and security markers, and
+uses safe DOM text operations for response, batch and audit data. JSON remains
+available only through the explicit event-export action.
 
 Suggested demonstration:
 

@@ -14,7 +14,7 @@ Verified final result:
 
 ```text
 No broken requirements found.
-41 passed
+42 passed
 ```
 
 The dependency versions used to serialize the bundled model are pinned in
@@ -49,7 +49,7 @@ The dependency versions used to serialize the bundled model are pinned in
 | Upstream validation | Malformed JSON shapes return `invalid_upstream_response` |
 | Request limits | Unknown modes, wrong field types and oversized batches are rejected |
 | Metrics integrity | Upstream failures are not counted as passed requests |
-| Dashboard UX | Batch, three modes, ML score, search and export controls are present |
+| Dashboard UX | Batch, three modes, ML score, search and export controls are present; result, batch and event data use structured safe views with no raw JSON display |
 
 All live-provider tests use a local mock aiohttp server. They prove integration
 and error handling without requiring a real API key or external network call.

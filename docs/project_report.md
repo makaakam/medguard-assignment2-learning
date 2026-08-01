@@ -41,7 +41,7 @@ Browser Dashboard                     OpenAI-compatible client
 | Canary | `medguard_core/canary.py` | Detects prompt leakage in normal, nested and streamed output |
 | ML scorer | `medguard_core/risk_model.py` | Produces a local risk probability and action |
 | Audit | `medguard_core/audit.py` | Stores bounded event metadata without keys or full clinical text |
-| Dashboard | `medguard_core/dashboard.py` | Presents controls, metrics and evidence to the analyst |
+| Dashboard | `medguard_core/dashboard.py` | Presents readable decisions, AI output, signals, protected message flow and batch evidence |
 
 The modules separate responsibilities so each defense can be tested and
 explained independently while the proxy remains the integration point.
@@ -77,6 +77,7 @@ Automated tests use a local mock provider so no secret or paid API is required.
 - Rule category, ML score, processed messages and audit events give explainable evidence.
 - Batch metrics help the analyst compare attacks and benign samples.
 - Search and JSON export support review after the live demonstration.
+- API and model data are rendered through safe DOM text operations; raw JSON is not displayed, protected system instructions and security markers are hidden, and JSON is available only through explicit event export.
 - The server binds to `127.0.0.1` by default and never returns its configured API key.
 
 ## From Iteration 1 to Iteration 2
