@@ -9,7 +9,7 @@ python -m pytest -q
 Final local result:
 
 ```text
-20 passed
+24 passed
 ```
 
 ## Verification scope
@@ -27,6 +27,8 @@ output remain outside I1.
 | Sanitize mode | Suspicious content can be removed instead of blocking |
 | Tool/RAG inspection | Tool content is scanned and isolated |
 | Canary | Marker injection and non-streaming leak detection |
+| ML risk scoring | Missing-model fallback, text extraction and trained-model score ordering |
+| Dataset split | Training metadata records zero overlapping `source_id` values |
 | Offline AI demonstration | Clean simulated clinical data returns labelled simulated output |
 | Proxy integration | Clean requests reach a mock LLM server |
 | Upstream blocking | Attack requests do not reach the mock LLM |
@@ -64,4 +66,5 @@ decision = blocked
 category = role_override
 ```
 
-Expected clean result: `decision = passed` and `ai_output` begins with `Simulated clinical assistant output`.
+Expected clean result: `decision = passed`, `ml_risk.available = true` and
+`ai_output` begins with `Simulated clinical assistant output`.

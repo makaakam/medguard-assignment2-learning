@@ -15,6 +15,7 @@ from .config import MedGuardConfig, apply_config_update, config_payload
 from .dashboard import DASHBOARD_HTML
 from .detectors import InjectionPatternDetector
 from .isolation import RAGContentIsolator
+from .risk_model import RiskScorer
 
 logger = logging.getLogger("medguard_proxy")
 
@@ -98,6 +99,7 @@ class MedGuardProxy:
         self.detector = InjectionPatternDetector(config)
         self.isolator = RAGContentIsolator(config)
         self.canary = CanaryTokenDetector(config)
+        self.risk_scorer = RiskScorer(config)
         self.audit = AuditLogger(config)
         self._session: aiohttp.ClientSession | None = None
 
@@ -128,10 +130,15 @@ class MedGuardProxy:
                 code="streaming_not_supported",
             )
 
+        risk_meta = self.risk_scorer.score_messages(messages)
         detected, messages, layer1_meta = self.detector.scan_messages(messages)
+        layer1_meta["ml_risk"] = risk_meta
         if detected and self.config.block_on_injection:
             self.audit.log("blocked", {"reason": "injection_pattern", "layer1_meta": layer1_meta})
             return blocked_response("prompt injection pattern detected")
+        if risk_meta.get("action") == "block" and self.config.block_on_injection:
+            self.audit.log("blocked", {"reason": "ml_risk_score", "risk_meta": risk_meta})
+            return blocked_response("ML risk scorer detected likely prompt injection")
 
         messages, isolation_applied = self.isolator.isolate(messages)
         messages, canary_token = self.canary.inject(messages)
@@ -141,6 +148,7 @@ class MedGuardProxy:
             "request",
             {
                 "layer1_meta": layer1_meta,
+                "risk_meta": risk_meta,
                 "rag_isolation": isolation_applied,
                 "canary_injected": bool(canary_token),
                 "summary": message_summary(messages),
@@ -225,6 +233,12 @@ def create_app(config: MedGuardConfig) -> web.Application:
             ),
             "rag_isolated": sum(1 for event in events if event.get("rag_isolation")),
             "canary_injected": sum(1 for event in events if event.get("canary_injected")),
+            "ml_high_risk": sum(
+                1 for event in events if event.get("risk_meta", {}).get("action") == "block"
+            ),
+            "ml_warn": sum(
+                1 for event in events if event.get("risk_meta", {}).get("action") == "warn"
+            ),
             "upstream_errors": sum(1 for event in events if event.get("event") == "upstream_error"),
         }
 
@@ -253,8 +267,15 @@ def create_app(config: MedGuardConfig) -> web.Application:
             messages.append({"role": "tool", "content": rag_content})
 
         original_messages = list(messages)
+        risk_meta = proxy.risk_scorer.score_messages(messages)
         detected, processed_messages, layer1_meta = proxy.detector.scan_messages(messages)
-        decision = "blocked" if detected and config.block_on_injection else "passed"
+        layer1_meta["ml_risk"] = risk_meta
+        decision = (
+            "blocked"
+            if (detected or risk_meta.get("action") == "block")
+            and config.block_on_injection
+            else "passed"
+        )
         isolation_applied = False
         canary_token = ""
 
@@ -272,6 +293,7 @@ def create_app(config: MedGuardConfig) -> web.Application:
             "final_safety": final_safety,
             "latency_ms": latency_ms,
             "layer1": layer1_meta,
+            "ml_risk": risk_meta,
             "rag_isolation": isolation_applied,
             "canary_injected": bool(canary_token),
             "original_messages": original_messages,
@@ -297,6 +319,7 @@ def create_app(config: MedGuardConfig) -> web.Application:
                 "final_safety": result["final_safety"],
                 "latency_ms": result["latency_ms"],
                 "layer1_meta": result["layer1"],
+                "risk_meta": result["ml_risk"],
                 "rag_isolation": result["rag_isolation"],
                 "canary_injected": result["canary_injected"],
                 "summary": message_summary(result["processed_messages"]),
@@ -315,6 +338,7 @@ def create_app(config: MedGuardConfig) -> web.Application:
                     "layer1_injection_guard": config.injection_guard_enabled,
                     "layer2_rag_isolation": config.rag_isolation_enabled,
                     "layer3_canary": config.canary_enabled,
+                    "ml_risk_scorer": config.risk_model_enabled,
                 },
                 "target": config.target_base_url,
             }

@@ -21,6 +21,7 @@ Client -> MedGuard Proxy -> Upstream LLM API
 | Injection Guard | `medguard_core/detectors.py` | Detects suspicious instructions in user and tool text |
 | RAG Isolation | `medguard_core/isolation.py` | Marks clinical context as untrusted data |
 | Canary | `medguard_core/canary.py` | Adds a secret marker and checks non-streaming model output |
+| ML Risk Scorer | `medguard_core/risk_model.py` | Adds a local probability score to rule-based evidence |
 | Audit | `medguard_core/audit.py` | Stores event metadata without API keys or full messages |
 | Dashboard | `medguard_core/dashboard.py` | Runs the classroom demonstration |
 
@@ -34,11 +35,20 @@ The actual proxy path forwards clean, non-streaming `/v1/chat/completions` reque
 
 The simulated output is not presented as medical advice or as evidence of model accuracy. This build does not validate medical facts.
 
+The local ML scorer is a TF-IDF and logistic-regression pipeline trained on
+900 constructed examples derived from 300 Alpaca prompt pairs. Training and
+test data are split by `source_id`; the recorded overlap is zero. The resulting
+1.0 synthetic metrics show that the model learned the constructed wrapper
+patterns only. They are not reported as real-world or clinical-safety results.
+
 ## Defense choices
 
 1. Injection Guard offers an immediate, explainable decision for common role override, prompt leak and unsafe medication patterns.
 2. RAG Isolation separates instructions from retrieved EHR/tool text and treats the retrieved text as data.
 3. Canary checks whether a protected system marker appears in non-streaming model output.
+4. ML Risk Scoring complements the explainable rules with a local probability
+   and pass/warn/block action. If the model artifact is unavailable, the other
+   three defenses continue working and the API reports the scorer as unavailable.
 
 We chose block and sanitize modes because an analyst may need either a strict demonstration or a comparison of the transformed request.
 

@@ -1,0 +1,13 @@
+{
+  "sample_pairs": 300,
+  "total_examples": 900,
+  "train_examples": 675,
+  "test_examples": 225,
+  "train_source_ids": 225,
+  "test_source_ids": 75,
+  "source_id_overlap": 0,
+  "accuracy": 1.0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0
+}

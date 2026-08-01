@@ -1,4 +1,4 @@
-# MedGuard — Assignment 2 Iteration 1
+# MedGuard — Assignment 2 Iteration 1 Optimized
 
 MedGuard is a local security proxy for clinical LLM workflows. This repository contains our first complete MVP for FIT5238 Assignment 2.
 
@@ -13,6 +13,7 @@ The MVP contains:
 - block and sanitize responses;
 - EHR/RAG content isolation;
 - Canary-token checks for non-streaming model output;
+- a local TF-IDF and logistic-regression prompt-injection risk scorer;
 - an OpenAI-compatible `/v1/chat/completions` proxy;
 - simulated clinical data and simulated AI output for an offline classroom demo;
 - audit events and runtime defense switches;
@@ -42,6 +43,9 @@ medguard-iteration1/
   requirements.txt
   README.md
   medguard_core/
+  scripts/
+  models/
+  data/
   tests/
   docs/
 ```
@@ -66,8 +70,32 @@ python -m pytest -q
 Verified Iteration 1 result:
 
 ```text
-20 passed
+24 passed
 ```
+
+The bundled risk model was trained with the exact NumPy, scikit-learn and
+joblib versions pinned in `requirements.txt`, so a clean Python 3.12 install
+does not depend on local compiler tools.
+
+## Local ML risk scorer
+
+The optional scorer complements the rule detector and shows a risk score in
+the Dashboard and API evidence. It was trained on 900 constructed examples
+derived from 300 Alpaca prompt pairs. The split is grouped by `source_id`, so
+the same original prompt pair cannot occur in both train and test sets.
+
+The recorded synthetic split has zero source overlap and scores 1.0 for
+accuracy, precision, recall and F1. These numbers only describe the constructed
+wrapper-classification task. They are not clinical-safety or real-world
+prompt-injection performance claims.
+
+To reproduce the model with a separately obtained `alpaca_data.json` file:
+
+```powershell
+python -B scripts\train_risk_model.py --alpaca "<path-to-alpaca_data.json>" --sample-pairs 300
+```
+
+The raw Alpaca file is training input only and is excluded by `.gitignore`.
 
 ## Run the offline MVP demo
 

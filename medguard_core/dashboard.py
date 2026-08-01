@@ -35,7 +35,7 @@ DASHBOARD_HTML = r"""<!doctype html>
     button.primary { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: 650; }
     .button-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
     .grid-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
     .metric { border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: #fbfcfe; }
     .metric b { display: block; font-size: 20px; }
     .metric span { color: var(--muted); font-size: 12px; }
@@ -105,6 +105,7 @@ DASHBOARD_HTML = r"""<!doctype html>
           <div class="metric"><b id="blockedMetric">0</b><span>Blocked</span></div>
           <div class="metric"><b id="passedMetric">0</b><span>Passed</span></div>
           <div class="metric"><b id="sanitizedMetric">0</b><span>Sanitized</span></div>
+          <div class="metric"><b id="mlRiskMetric">n/a</b><span>ML Risk Score</span></div>
         </div>
       </section>
       <section><h2>Decision and simulated AI output</h2><pre id="resultBox">Run an analysis to inspect the defense decision and processed messages.</pre></section>
@@ -158,6 +159,7 @@ DASHBOARD_HTML = r"""<!doctype html>
       const data = await response.json();
       decisionBadge.textContent = data.final_safety.toUpperCase();
       decisionBadge.className = "status " + (data.decision === "blocked" ? "blocked" : "pass");
+      mlRiskMetric.textContent = data.ml_risk?.available ? data.ml_risk.risk_score : "n/a";
       resultBox.textContent = pretty(data);
       await loadStatus();
       await loadEvents();

@@ -44,6 +44,23 @@ async def test_demo_analyze_simulated_ai_returns_output(aiohttp_client):
     assert body["ai_output"].startswith("Simulated clinical assistant output")
 
 
+async def test_demo_analyze_returns_ml_risk_evidence(aiohttp_client):
+    client = await aiohttp_client(create_app(MedGuardConfig(audit_enabled=False)))
+
+    resp = await client.post(
+        "/api/demo/analyze",
+        json={
+            "user_message": "Summarize this hypertension follow-up note.",
+            "rag_content": "Patient diagnosis: hypertension.",
+        },
+    )
+    body = await resp.json()
+
+    assert resp.status == 200
+    assert body["ml_risk"]["available"] is True
+    assert body["ml_risk"]["action"] in {"pass", "warn", "block"}
+
+
 async def test_iteration1_has_no_batch_endpoint(aiohttp_client):
     client = await aiohttp_client(create_app(MedGuardConfig(audit_enabled=False)))
 
@@ -62,6 +79,7 @@ async def test_iteration1_dashboard_names_one_primary_user_and_hides_i2_controls
 
     assert resp.status == 200
     assert "Primary user: Clinical AI Security Analysts" in html
+    assert "ML Risk Score" in html
     assert "Batch Security Evaluation" not in html
     assert "Live upstream AI" not in html
     assert "analysisMode" not in html

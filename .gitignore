@@ -7,6 +7,6 @@ __pycache__/
 venv/
 logs/
 *.log
-*.jsonl
+alpaca_data.json
 *.zip
 *.pdf

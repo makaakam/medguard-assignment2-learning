@@ -19,6 +19,11 @@ class MedGuardConfig:
 
     canary_enabled: bool = True
 
+    risk_model_enabled: bool = True
+    risk_model_path: str = "./models/risk_scorer.joblib"
+    risk_block_threshold: float = 0.85
+    risk_warn_threshold: float = 0.60
+
     audit_enabled: bool = True
     audit_log_path: str = "./logs/audit.jsonl"
 
@@ -33,9 +38,12 @@ def config_payload(config: MedGuardConfig) -> dict:
         "injection_guard_enabled": config.injection_guard_enabled,
         "rag_isolation_enabled": config.rag_isolation_enabled,
         "canary_enabled": config.canary_enabled,
+        "risk_model_enabled": config.risk_model_enabled,
         "block_on_injection": config.block_on_injection,
         "mode": "block" if config.block_on_injection else "sanitize",
         "rag_min_length": config.rag_min_length,
+        "risk_block_threshold": config.risk_block_threshold,
+        "risk_warn_threshold": config.risk_warn_threshold,
     }
 
 
@@ -44,6 +52,7 @@ def apply_config_update(config: MedGuardConfig, payload: dict) -> None:
         "injection_guard_enabled",
         "rag_isolation_enabled",
         "canary_enabled",
+        "risk_model_enabled",
         "block_on_injection",
     ):
         if field in payload:
@@ -57,3 +66,12 @@ def apply_config_update(config: MedGuardConfig, payload: dict) -> None:
             config.rag_min_length = max(0, int(payload["rag_min_length"]))
         except (TypeError, ValueError):
             pass
+
+    for field in ("risk_block_threshold", "risk_warn_threshold"):
+        if field in payload:
+            try:
+                value = float(payload[field])
+                if 0.0 <= value <= 1.0:
+                    setattr(config, field, value)
+            except (TypeError, ValueError):
+                pass
