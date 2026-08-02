@@ -188,8 +188,8 @@ DASHBOARD_HTML = r"""<!doctype html>
               <ul class="signal-list" id="securitySignalList"><li class="signal-item"><span>Status</span><b>Waiting for analysis</b></li></ul>
             </article>
             <article class="result-card message-card">
-              <div class="card-title"><h3>Protected message flow</h3><span class="muted">Canary values remain hidden</span></div>
-              <div class="message-list" id="messageFlow"><div class="empty-state">Processed messages will appear as readable cards instead of raw JSON.</div></div>
+              <div class="card-title"><h3>Message review</h3><span class="muted">Sensitive protection details stay private</span></div>
+              <div class="message-list" id="messageFlow"><div class="empty-state">Message details will appear here after analysis.</div></div>
             </article>
           </div>
           <aside class="recommendation">
@@ -232,7 +232,7 @@ DASHBOARD_HTML = r"""<!doctype html>
 
     function displayMessageContent(message) {
       if (String(message?.role || "").toLowerCase() === "system") {
-        return "MedGuard security policy applied. Hidden system instructions and security markers are not displayed.";
+        return "Sensitive protection details stay private while this request is checked.";
       }
       return contentToText(message?.content)
         .replace(/<\/?UNTRUSTED_MEDICAL_DATA>/gi, "")
@@ -307,7 +307,7 @@ DASHBOARD_HTML = r"""<!doctype html>
       renderMessageFlow(data.processed_messages);
       recommendedAction.textContent = blocked
         ? "Review the highlighted security signals, remove suspicious instructions, and resubmit only trusted clinical content."
-        : "Review the protected message flow and simulated response before connecting the request to a live clinical AI workflow.";
+        : "Review the message and simulated response before connecting the request to a live clinical AI workflow.";
     }
 
     function renderDashboardError(message) {

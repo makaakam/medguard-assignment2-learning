@@ -100,7 +100,11 @@ async def test_iteration1_dashboard_uses_structured_safe_result_views(aiohttp_cl
     assert 'id="recommendedAction"' in html
     assert "function renderAnalysisResult(data)" in html
     assert "function displayMessageContent(message)" in html
-    assert "MedGuard security policy applied" in html
+    assert "Sensitive protection details stay private" in html
+    assert "raw JSON" not in html
+    assert "system instructions" not in html
+    assert "security markers" not in html
+    assert "Canary values remain hidden" not in html
     assert "<pre" not in html
     assert '<pre id="resultBox"' not in html
     assert "resultBox.textContent" not in html
