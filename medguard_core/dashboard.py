@@ -489,7 +489,7 @@ DASHBOARD_HTML = r"""<!doctype html>
           <div class="panel-head"><h2>Event Tools</h2><span class="badge" id="eventCount">0 events</span></div>
           <div class="panel-body controls">
             <div><label for="eventFilter">Search Events</label><input id="eventFilter" placeholder="blocked, role_override, upstream"></div>
-            <button id="exportEventsBtn">Export events JSON</button>
+            <button id="exportEventsBtn">Export event report</button>
           </div>
         </section>
       </aside>
@@ -541,22 +541,22 @@ DASHBOARD_HTML = r"""<!doctype html>
               <div>
                 <span class="outcome-label">Final safety decision</span>
                 <h3 id="summaryDecision">Ready for analysis</h3>
-                <p id="outcomeExplanation">Submit a request to see a clear decision, protected message flow, and AI response.</p>
+            <p id="outcomeExplanation">Submit a request to see a clear decision, message review, and AI response.</p>
               </div>
               <div class="latency-pill"><span>Latency</span><b id="latencyValue">—</b></div>
             </div>
             <div class="result-grid">
               <article class="result-card ai-response">
                 <div class="card-title"><h3>AI response</h3><span class="badge" id="aiModeLabel">Not requested</span></div>
-                <p class="ai-response-text" id="aiResponseText">Choose an analysis mode and run the request. Model output will be shown as readable text, never raw JSON.</p>
+                <p class="ai-response-text" id="aiResponseText">Choose an analysis mode and run the request. Your AI response will appear here.</p>
               </article>
               <article class="result-card">
                 <div class="card-title"><h3>Security signals</h3><span class="muted">Explainable checks</span></div>
                 <ul class="signal-list" id="securitySignalList"><li class="signal-item"><span>Status</span><b>Waiting for analysis</b></li></ul>
               </article>
               <article class="result-card message-card">
-                <div class="card-title"><h3>Protected message flow</h3><span class="muted">Canary and binary data remain hidden</span></div>
-                <div class="message-list" id="messageFlow"><div class="empty">Processed messages will appear as readable cards instead of raw JSON.</div></div>
+                <div class="card-title"><h3>Message review</h3><span class="muted">Sensitive protection details stay private</span></div>
+                <div class="message-list" id="messageFlow"><div class="empty">Message details will appear here after analysis.</div></div>
               </article>
             </div>
             <aside class="recommendation">
@@ -611,7 +611,7 @@ DASHBOARD_HTML = r"""<!doctype html>
 
     function displayMessageContent(message) {
       if (String(message?.role || "").toLowerCase() === "system") {
-        return "MedGuard security policy applied. Hidden system instructions and security markers are not displayed.";
+        return "Sensitive protection details stay private while this request is checked.";
       }
       return contentToText(message?.content)
         .replace(/<\/?UNTRUSTED_MEDICAL_DATA>/gi, "")
@@ -696,7 +696,7 @@ DASHBOARD_HTML = r"""<!doctype html>
         ? "Check the upstream model, credentials, and network connection, then retry without exposing credentials in the browser."
         : blocked
           ? "Review the highlighted signals, remove suspicious instructions, and resubmit only trusted clinical content."
-          : "Review the protected message flow and AI response before using it in a clinical workflow.";
+          : "Review the message and AI response before using it in a clinical workflow.";
     }
 
     function renderDashboardError(message) {
