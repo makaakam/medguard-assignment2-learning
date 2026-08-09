@@ -273,8 +273,7 @@ class MedGuardProxy:
                         code="invalid_upstream_response",
                     )
 
-                # Preserve provider error payloads, but reject malformed 2xx
-                # responses instead of raising while iterating choices.
+                # A successful provider response must contain usable choices.
                 if resp.status < 400:
                     choices = response_body.get("choices")
                     if not isinstance(choices, list) or not all(
@@ -288,8 +287,7 @@ class MedGuardProxy:
 
                 if self.canary.triggered(response_body, canary_token):
                     logger.warning("Layer 3: canary token appeared in non-streaming output.")
-                    # Never write the secret or a response snippet containing it
-                    # to the audit log/dashboard.
+                    # Keep the protected marker and matching response text out of logs.
                     self.audit.log("canary_triggered", {"token_redacted": True})
                     return blocked_response("canary token detected in output")
 
@@ -308,10 +306,7 @@ class MedGuardProxy:
         body: dict[str, Any],
         canary_token: str,
     ) -> web.StreamResponse:
-        # Buffer the complete SSE body before releasing it. This deliberately
-        # trades a small amount of latency for a stronger guarantee: a canary
-        # token split across content, tool-call arguments, or malformed provider
-        # chunks can never leak a prefix before the full token is recognised.
+        # Buffer the stream so a protected marker cannot leak in separate chunks.
         try:
             async with session.post(url, json=body, headers=headers) as resp:
                 raw_body = await resp.read()
@@ -333,8 +328,7 @@ class MedGuardProxy:
                 try:
                     data = json.loads(data_str)
                 except json.JSONDecodeError:
-                    # Preserve non-JSON SSE extensions, but still scan their
-                    # raw text for the secret marker.
+                    # Non-JSON stream data still needs the same leak check.
                     accumulated_text += data_str
                     continue
                 if self.canary.triggered(data, canary_token):

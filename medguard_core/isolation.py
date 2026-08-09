@@ -59,13 +59,7 @@ class RAGContentIsolator:
         return content
 
     def _wrap(self, content):
-        """Wrap text or multimodal content in authoritative data delimiters.
-
-        For a content array, retain image and other non-text parts and add text
-        delimiter blocks around the copied array.  This prevents a user/RAG
-        message from losing its multimodal payload merely because isolation is
-        enabled.
-        """
+        """Wrap text or multimodal content in untrusted-data boundaries."""
 
         if isinstance(content, list):
             safe_parts = self._sanitize_structured_content(content)
@@ -110,8 +104,7 @@ class RAGContentIsolator:
                 msg = {**msg, "content": self._wrap(content)}
                 isolation_applied = True
             elif role == "user" and text and self._looks_like_rag(text):
-                # Keep multimodal parts while enclosing the complete retrieved
-                # content in an explicitly untrusted reference block.
+                # Keep multimodal parts inside the same untrusted reference block.
                 msg = {**msg, "content": self._wrap(content)}
                 isolation_applied = True
             new_messages.append(msg)

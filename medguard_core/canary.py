@@ -36,13 +36,7 @@ class CanaryTokenDetector:
         return new_messages, token
 
     def triggered(self, output_text: Any, token: str) -> bool:
-        """Search every textual field in an upstream response.
-
-        Providers may place generated text in ``content``, multimodal parts,
-        ``tool_calls`` arguments, ``function_call`` fields, or provider-specific
-        nested objects. Scanning only ``choices[].message.content`` leaves a
-        straightforward prompt-leak bypass.
-        """
+        """Search all textual fields in a provider response."""
         return bool(self.config.canary_enabled and token and _contains_token(output_text, token))
 
 
@@ -107,6 +101,5 @@ def collect_text(value: Any) -> str:
             return parts
         return []
 
-    # Concatenate without separators so a secret split across successive SSE
-    # deltas is still recognised before any buffered output is released.
+    # Joining without separators catches a marker split across stream events.
     return "".join(walk(value, 0))

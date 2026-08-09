@@ -28,15 +28,7 @@ _MAX_CONTENT_DEPTH = 32
 
 
 def extract_text_content(content: Any) -> str:
-    """Collect text from nested chat/multimodal content safely.
-
-    OpenAI-compatible messages may use a string, an array of text/image
-    blocks, or provider-specific nested tool/function objects.  Only known
-    text-bearing keys are collected, so image URLs and metadata do not become
-    detector input.  A depth and cycle guard prevents malformed Python values
-    from hanging or overflowing the detector; JSON request bodies cannot have
-    cycles, but direct callers can.
-    """
+    """Collect text from supported nested message fields."""
 
     seen: set[int] = set()
 
@@ -70,9 +62,7 @@ def extract_text_content(content: Any) -> str:
                 elif key in _CONTAINER_KEYS:
                     parts.extend(walk(child, text_context=text_context, depth=depth + 1))
                 elif isinstance(child, (dict, list, tuple)):
-                    # Unknown wrappers can still contain a recognised text
-                    # field.  Recurse into containers, but skip metadata
-                    # leaves such as type/id/mime/source.
+                    # Unknown wrappers may still contain a supported text field.
                     parts.extend(walk(child, text_context=False, depth=depth + 1))
             return parts
 
