@@ -1,9 +1,9 @@
 # MedGuard — Assignment 2 Iteration 2 Final
 
-MedGuard is a deployable local security proxy and web dashboard for clinical
-LLM workflows. The primary user is a **Clinical AI Security Analyst** who needs
-to test prompts, inspect defense evidence and compare security outcomes before
-requests reach an upstream model.
+MedGuard is a deployable local safety proxy and web dashboard for clinical AI
+workflows. The primary user is a **Clinical AI Security Analyst** who needs to
+check requests, understand safety evidence and decide whether a request should
+continue before it reaches a connected AI model.
 
 This branch is the final Iteration 2 build. It retains the complete optimized
 Iteration 1 baseline and adds the planned I2 functionality.
@@ -17,7 +17,8 @@ Iteration 1 baseline and adds the planned I2 functionality.
 - EHR/RAG content isolation;
 - Canary-token protection for non-streaming and streaming responses;
 - OpenAI-compatible `/v1/chat/completions` proxy;
-- defense-only, simulated-AI and live-upstream Dashboard modes;
+- Dashboard choices labelled Check safety only, Use a sample AI response and
+  Use a connected AI model;
 - batch security evaluation with detection, false-positive and latency metrics;
 - multimodal message validation and nested response/tool-call scanning;
 - audit-event search and JSON export;
@@ -76,7 +77,7 @@ python -m pytest -q
 Verified final result:
 
 ```text
-42 passed
+50 passed
 ```
 
 The suite covers the original I1 acceptance criteria, all I2 features and
@@ -91,18 +92,18 @@ python -B run.py --port 8081
 
 Open `http://127.0.0.1:8081/dashboard`.
 
-The user interface renders model/API results as readable cards and tables rather
-than raw JSON. It hides protected system instructions and security markers, and
-uses safe DOM text operations for response, batch and audit data. JSON remains
-available only through the explicit event-export action.
+The Dashboard guides a first-time user through three steps: enter the task and
+optional demonstration context, choose how the request should run, and review
+the recommended outcome. Technical evidence remains available in an expandable
+section, while protected instructions and hidden security markers stay private.
 
 Suggested demonstration:
 
-1. Run a clean sample in Simulated AI mode and show the ML risk evidence.
-2. Run Role override and Poisoned EHR samples and explain block/isolation.
-3. Change Block to Sanitize and compare the processed message.
-4. Run batch evaluation and show detection rate, false-positive rate and latency.
-5. Filter the audit events and export the visible evidence as JSON.
+1. Choose **Use a sample AI response**, check a clean request and show **Safe to continue**.
+2. Open **Technical details** to explain the supporting risk and message-handling evidence.
+3. Run Role override and Poisoned EHR examples and show **Request stopped** or **Review recommended**.
+4. Compare **Stop unsafe requests** with **Remove unsafe instructions and continue**.
+5. Select **Test sample requests**, review the summary, filter **Review history** and download the report.
 
 For a supervised classroom demo on the same trusted network:
 
@@ -124,8 +125,8 @@ python -B run.py --target "<provider-base-url>" --port 8081
 ```
 
 The proxy also accepts an authorization header from an OpenAI-compatible client.
-The Dashboard uses the server-side environment value when Live upstream AI is
-selected.
+The Dashboard uses the server-side environment value when **Use a connected AI
+model** is selected.
 
 ## Local ML risk scorer
 

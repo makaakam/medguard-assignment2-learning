@@ -71,9 +71,12 @@ Automated tests use a local mock provider so no secret or paid API is required.
 ## UX and technical design choices
 
 - One named audience avoids mixing security analysis with clinical diagnosis.
+- A three-step request check gives first-time users a clear starting point: enter the task, choose how it runs and review the outcome.
+- Primary outcomes use `Safe to continue`, `Review recommended` and `Request stopped`; technical categories remain in an expandable evidence section.
+- Input guidance explains what belongs in each field and warns users to enter demonstration data rather than real patient information.
 - Clean, attack and poisoned-EHR samples provide a repeatable demonstration.
-- Block and sanitize modes expose the operational trade-off rather than hiding it.
-- Defense-only, simulated-AI and live-upstream modes make data provenance clear.
+- `Stop unsafe requests` and `Remove unsafe instructions and continue` expose the operational trade-off without relying on the term sanitize.
+- `Check safety only`, `Use a sample AI response` and `Use a connected AI model` make response provenance clear.
 - Rule category, ML score, processed messages and audit events give explainable evidence.
 - Batch metrics help the analyst compare attacks and benign samples.
 - Search and JSON export support review after the live demonstration.

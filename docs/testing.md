@@ -14,7 +14,7 @@ Verified final result:
 
 ```text
 No broken requirements found.
-42 passed
+50 passed
 ```
 
 The dependency versions used to serialize the bundled model are pinned in
@@ -49,7 +49,9 @@ The dependency versions used to serialize the bundled model are pinned in
 | Upstream validation | Malformed JSON shapes return `invalid_upstream_response` |
 | Request limits | Unknown modes, wrong field types and oversized batches are rejected |
 | Metrics integrity | Upstream failures are not counted as passed requests |
-| Dashboard UX | Batch, three modes, ML score, search and export controls are present; result, batch and event data use structured safe views with no raw JSON display |
+| Dashboard guidance | The task and optional-context fields have introductions, examples, accessible descriptions and a demonstration-data warning |
+| Plain-language decisions | Safe, review and stopped outcomes are shown while technical evidence remains available separately |
+| Dashboard UX | Three run choices, sample testing, review-history search and report download use structured safe views with no raw JSON display |
 
 All live-provider tests use a local mock aiohttp server. They prove integration
 and error handling without requiring a real API key or external network call.
@@ -67,10 +69,13 @@ http://127.0.0.1:8081/health
 http://127.0.0.1:8081/dashboard
 ```
 
-Expected clean sample: `decision = passed`, `ml_risk.available = true`, and a
-clearly labelled simulated output. Expected Role override sample:
-`decision = blocked` and `category = role_override`.
+Expected clean sample: the Dashboard shows **Safe to continue**, the API returns
+`decision = passed` and `ml_risk.available = true`, and the sample response is
+clearly labelled. Expected Role override sample: the Dashboard shows **Request
+stopped**, while the API returns `decision = blocked` and
+`category = role_override`.
 
-Run batch evaluation and confirm that the summary contains detection rate,
-false-positive rate and average latency. Filter the audit list and export the
-visible results to confirm the analyst evidence workflow.
+Select **Test sample requests** and confirm that the summary explains unsafe
+examples found, safe examples incorrectly flagged and average check time. Filter
+**Review history** and download the report to confirm the analyst evidence
+workflow.
