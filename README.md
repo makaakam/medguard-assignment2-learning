@@ -77,12 +77,14 @@ python -m pytest -q
 Verified final result:
 
 ```text
-50 passed
+69 passed
 ```
 
 The suite covers the original I1 acceptance criteria, all I2 features and
 normal, blocked, invalid and upstream-failure paths. See
-[`docs/testing.md`](docs/testing.md) for the detailed evidence.
+[`docs/testing.md`](docs/testing.md) for the detailed evidence and
+[`docs/iteration2_feedback.md`](docs/iteration2_feedback.md) for the trace from
+Iteration 1 staff feedback to the final Iteration 2 changes.
 
 ## Run the offline demo
 
@@ -90,12 +92,20 @@ normal, blocked, invalid and upstream-failure paths. See
 python -B run.py --port 8081
 ```
 
-Open `http://127.0.0.1:8081/dashboard`.
+Open `http://127.0.0.1:8081/dashboard`. The first visit opens a five-step
+interactive guide. Use **Help** in the top navigation to restart it. Recent
+redacted decisions are available on the separate
+`http://127.0.0.1:8081/review-history` page.
 
 The Dashboard guides a first-time user through three steps: enter the task and
 optional demonstration context, choose how the request should run, and review
 the recommended outcome. Technical evidence remains available in an expandable
 section, while protected instructions and hidden security markers stay private.
+Field-level introductions and examples explain what belongs in each input. The
+interface uses plain-language outcomes and consistent semantic colours: green
+for safe decisions, red for review warnings, deep red for stopped requests,
+blue for information and grey for inactive or waiting states. Run controls stay
+aligned on desktop, use a two-column tablet layout and stack on mobile.
 
 Suggested demonstration:
 
@@ -103,7 +113,9 @@ Suggested demonstration:
 2. Open **Technical details** to explain the supporting risk and message-handling evidence.
 3. Run Role override and Poisoned EHR examples and show **Request stopped** or **Review recommended**.
 4. Compare **Stop unsafe requests** with **Remove unsafe instructions and continue**.
-5. Select **Test sample requests**, review the summary, filter **Review history** and download the report.
+5. Select **Test sample requests** and review the summary.
+6. Open **Review History**, filter the decision cards and download the redacted
+   session report.
 
 For a supervised classroom demo on the same trusted network:
 
@@ -152,6 +164,7 @@ The raw `alpaca_data.json` is not included and is ignored by Git.
 | Method and route | Purpose |
 |---|---|
 | `GET /dashboard` | Analyst web interface |
+| `GET /review-history` | Searchable redacted decision-history interface |
 | `GET /health` | Service and defense-layer health |
 | `GET /api/status` | Safe configuration and metrics |
 | `POST /api/config` | Change runtime defense switches |

@@ -71,15 +71,23 @@ Automated tests use a local mock provider so no secret or paid API is required.
 ## UX and technical design choices
 
 - One named audience avoids mixing security analysis with clinical diagnosis.
-- A three-step request check gives first-time users a clear starting point: enter the task, choose how it runs and review the outcome.
+- A task-first three-step request check gives first-time users a clear starting
+  point: describe the task, choose how it runs and review the outcome.
+- A five-step first-visit guide highlights each required control and can be
+  restarted from Help without interrupting the safety workflow.
 - Primary outcomes use `Safe to continue`, `Review recommended` and `Request stopped`; technical categories remain in an expandable evidence section.
 - Input guidance explains what belongs in each field and warns users to enter demonstration data rather than real patient information.
+- The initial demonstration record is anonymous and safe; unsafe content is loaded deliberately from clearly named example buttons.
 - Clean, attack and poisoned-EHR samples provide a repeatable demonstration.
 - `Stop unsafe requests` and `Remove unsafe instructions and continue` expose the operational trade-off without relying on the term sanitize.
 - `Check safety only`, `Use a sample AI response` and `Use a connected AI model` make response provenance clear.
+- Run controls share equal heights and alignment on desktop, change to two columns on tablets and stack on mobile.
+- Status colours use one operational meaning throughout: green is safe, red requires review, deep red is stopped, blue is informational and grey is inactive or waiting.
 - Rule category, ML score, processed messages and audit events give explainable evidence.
 - Batch metrics help the analyst compare attacks and benign samples.
-- Search and JSON export support review after the live demonstration.
+- A separate Review History page provides outcome filters, readable evidence
+  cards, search, resilient loading states and redacted JSON export without
+  crowding the request workspace.
 - API and model data are rendered through safe DOM text operations; raw JSON is not displayed, protected system instructions and security markers are hidden, and JSON is available only through explicit event export.
 - The server binds to `127.0.0.1` by default and never returns its configured API key.
 
@@ -99,6 +107,14 @@ Iteration 2 adds:
 6. audit-event filtering/export and expanded status metrics;
 7. full regression and abnormal-path tests covering both iterations.
 
+Iteration 1 staff feedback also led to four focused refinements. Each user
+message field now has a short introduction and example; technical wording was
+replaced with task-oriented language; short comments document security-sensitive
+logic without narrating obvious code; and the work is represented as owned
+Trello user stories with acceptance criteria and test evidence. The final
+Dashboard further improves responsive ordering, control alignment, first-run
+examples, outcome guidance and semantic status colours.
+
 The original I1 branch/tag and the optimized I1 branch/tag are retained, while
 the final I2 branch is built directly on the optimized I1 commit.
 
@@ -107,6 +123,7 @@ the final I2 branch is built directly on the optimized I1 commit.
 | Endpoint | Purpose and main behavior |
 |---|---|
 | `GET /dashboard` | Analyst-facing web system |
+| `GET /review-history` | Analyst-facing redacted decision history |
 | `GET /health` | Reports service and enabled defense layers |
 | `GET /api/status` | Returns safe config and calculated counters |
 | `POST /api/config` | Updates allow-listed runtime switches |

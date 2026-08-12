@@ -42,7 +42,7 @@ async def test_demo_analyze_simulated_ai_returns_output(aiohttp_client):
 
     assert resp.status == 200
     assert body["decision"] == "passed"
-    assert body["ai_output"].startswith("Simulated clinical assistant output")
+    assert body["ai_output"].startswith("Clinical summary based on the supplied demonstration record")
 
 
 async def test_demo_analyze_returns_ml_risk_evidence(aiohttp_client):
@@ -90,6 +90,20 @@ async def test_dashboard_uses_structured_safe_result_views(aiohttp_client):
     assert "resultBox.textContent" not in html
     assert "batchBox.innerHTML" not in html
     assert "JSON.stringify(value, null, 2)" not in html
+
+
+async def test_review_history_page_uses_redacted_event_api(aiohttp_client):
+    client = await aiohttp_client(create_app(MedGuardConfig(audit_enabled=False)))
+
+    response = await client.get("/review-history")
+    html = await response.text()
+
+    assert response.status == 200
+    assert 'fetch("/api/events")' in html
+    assert "function renderEvents()" in html
+    assert "function exportEvents()" in html
+    assert "<pre" not in html
+    assert "raw JSON" not in html
 
 
 async def test_batch_evaluation_returns_security_metrics(aiohttp_client):

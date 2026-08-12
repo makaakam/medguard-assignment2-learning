@@ -12,7 +12,7 @@ from aiohttp import web
 from .audit import AuditLogger
 from .canary import CanaryTokenDetector, collect_text
 from .config import MedGuardConfig, apply_config_update, config_payload
-from .dashboard import DASHBOARD_HTML
+from .dashboard import DASHBOARD_HTML, REVIEW_HISTORY_HTML
 from .detectors import InjectionPatternDetector
 from .isolation import RAGContentIsolator
 from .risk_model import RiskScorer
@@ -171,7 +171,7 @@ def simulated_ai_output(user_message: str, rag_content: str, decision: str) -> s
         return "No AI response generated because MedGuard blocked the request."
     source = rag_content or user_message
     preview = " ".join(source.split())[:180]
-    return f"Simulated clinical assistant output: reviewed supplied context. Key safe summary: {preview}"
+    return f"Clinical summary based on the supplied demonstration record: {preview}"
 
 
 class MedGuardProxy:
@@ -428,6 +428,9 @@ def create_app(config: MedGuardConfig) -> web.Application:
     async def dashboard_handler(request: web.Request) -> web.Response:
         return web.Response(text=DASHBOARD_HTML, content_type="text/html")
 
+    async def review_history_handler(request: web.Request) -> web.Response:
+        return web.Response(text=REVIEW_HISTORY_HTML, content_type="text/html")
+
     async def status_handler(request: web.Request) -> web.Response:
         return web.json_response({"status": "ok", "config": config_payload(config), "metrics": metrics()})
 
@@ -633,6 +636,7 @@ def create_app(config: MedGuardConfig) -> web.Application:
 
     app.router.add_get("/", dashboard_handler)
     app.router.add_get("/dashboard", dashboard_handler)
+    app.router.add_get("/review-history", review_history_handler)
     app.router.add_get("/api/status", status_handler)
     app.router.add_post("/api/config", config_handler)
     app.router.add_get("/api/events", events_handler)
